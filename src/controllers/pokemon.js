@@ -1,3 +1,7 @@
+const {
+    myPokemonList
+} = require("../models");
+
 const catchPokemon = async (req, res) => {
 
     try {
@@ -22,6 +26,30 @@ const catchPokemon = async (req, res) => {
     }
 }
 
+const addPokemon = async (req, res) => {
+    try {
+        const data = await myPokemonList.create({
+            pokemon_name: req.body.pokemon_name,
+            nickname: req.body.nickname,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        })
+
+        res.status(201).send({
+            status: "Success",
+            message: `Success add ${data.pokemon_name} to My Pokemon List`,
+            data
+        })
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            status: res.statusCode,
+            message: e.message
+        });
+    }
+}
+
 module.exports = {
-    catchPokemon
+    catchPokemon,
+    addPokemon
 }

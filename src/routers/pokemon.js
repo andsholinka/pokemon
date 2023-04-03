@@ -5,4 +5,6 @@ const router = express.Router();
 
 router.get('/catchPokemon/:name', pokemonController.catchPokemon);
 
+router.post('/addPokemon', pokemonController.addPokemon);
+
 module.exports = router;
