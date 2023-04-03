@@ -4,6 +4,7 @@
 * [Express](https://expressjs.com/) - The web framework used
 * [MySQL](https://mysql.com/) - Database
 * [Sequelize](https://sequelize.org/) - Sequelize is a promise-based Node.js ORM for SQL
+* [PokeApi](https://pokeapi.co//) - RESTful API interface to highly detailed objects built from thousands of lines of data related to Pokémon
 
 ## DEVELOPMENT
 ## Backend Development
