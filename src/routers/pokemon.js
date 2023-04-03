@@ -9,4 +9,6 @@ router.post('/addPokemon', pokemonController.addPokemon);
 
 router.get('/myPokemonList', pokemonController.getMyPokemonList);
 
+router.delete("/releasePokemon/:id", pokemonController.releasePokemon);
+
 module.exports = router;

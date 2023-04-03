@@ -108,8 +108,57 @@ const getMyPokemonList = async (req, res) => {
     }
 }
 
+const releasePokemon = async (req, res) => {
+    try {
+
+        const data = await myPokemonList.findOne({
+            where: {
+                id: req.params.id
+            }
+        })
+
+        if (data == null) {
+            res.status(404).send({
+                status: res.statusCode,
+                message: `Pokemon with ID ${req.params.id} Not Found`,
+            })
+            return
+        }
+
+        let number = Math.floor((Math.random() * 10) + 1);
+
+        if (number % 2 === 0) {
+            console.log(number + " is a prime number");
+            await myPokemonList.destroy({
+                where: {
+                    id: req.params.id,
+                }
+            })
+            res.status(200).json({
+                status: res.statusCode,
+                message: `pokemon ${data.nickname} successfully released`,
+            });
+        } else {
+            console.log(number + " is not a prime number");
+
+            res.status(400).json({
+                status: res.statusCode,
+                message: `failed to release pokemon ${data.nickname}, try again!`,
+            });
+        }
+
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            status: res.statusCode,
+            message: e.message
+        });
+    }
+}
+
 module.exports = {
     catchPokemon,
     addPokemon,
-    getMyPokemonList
+    getMyPokemonList,
+    releasePokemon
 }
