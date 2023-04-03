@@ -156,9 +156,71 @@ const releasePokemon = async (req, res) => {
     }
 }
 
+const renamePokemon = async (req, res) => {
+
+    try {
+        const data = await myPokemonList.findOne({
+            where: {
+                id: req.params.id
+            }
+        })
+
+        if (data == null) {
+            res.status(404).send({
+                status: res.statusCode,
+                message: `Pokemon with ID ${req.params.id} Not Found`,
+            })
+            return
+        }
+
+        if (data.fibonacci == null) {
+            var lastFibonacci = 0;
+            var nextFibonacci = 1
+            await data.update({
+                nickname: `${req.body.nickname}-${lastFibonacci}`,
+                fibonacci: nextFibonacci,
+                updatedAt: Date.now(),
+            });
+
+            res.status(200).send({
+                status: 'Success',
+                message: 'Success',
+                data: data.nickname
+            })
+            return
+        } else {
+            var lastFibonacci = data.fibonacci
+            var currentFibonacci = parseInt(data.nickname.split('-').pop()) + lastFibonacci
+            var nextFibonacci = parseInt(currentFibonacci) + lastFibonacci
+
+            await data.update({
+                nickname: `${req.body.nickname}-${lastFibonacci}`,
+                fibonacci: currentFibonacci,
+                updatedAt: Date.now(),
+            });
+
+            res.status(200).send({
+                status: 'Success',
+                message: 'Success',
+                data: data.nickname,
+                // data: data.nickname.split('-')[0]
+            })
+            return
+        }
+
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            status: res.statusCode,
+            message: e.message
+        })
+    }
+}
+
 module.exports = {
     catchPokemon,
     addPokemon,
     getMyPokemonList,
-    releasePokemon
+    releasePokemon,
+    renamePokemon
 }

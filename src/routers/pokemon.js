@@ -11,4 +11,6 @@ router.get('/myPokemonList', pokemonController.getMyPokemonList);
 
 router.delete("/releasePokemon/:id", pokemonController.releasePokemon);
 
+router.put('/myPokemonList/:id', pokemonController.renamePokemon);
+
 module.exports = router;
