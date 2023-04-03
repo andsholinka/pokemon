@@ -1,6 +1,7 @@
 const {
     myPokemonList
 } = require("../models");
+const pokeApi = require('../service/pokeApi');
 
 const catchPokemon = async (req, res) => {
 
@@ -49,7 +50,66 @@ const addPokemon = async (req, res) => {
     }
 }
 
+const getMyPokemonList = async (req, res) => {
+
+    try {
+        const pageAsNumber = parseInt(req.query.page);
+        const sizeAsNumber = parseInt(req.query.size);
+
+        let page = 0;
+        if (!isNaN(pageAsNumber) && pageAsNumber > 0) {
+            page = pageAsNumber;
+        }
+
+        let size = 5;
+        if (!isNaN(sizeAsNumber) && !(sizeAsNumber > 10) && !(sizeAsNumber < 1)) {
+            size = sizeAsNumber;
+        }
+
+        const usersWithCount = await myPokemonList.findAndCountAll({
+            limit: size,
+            offset: page * size,
+            attributes: ['id', 'pokemon_name', 'nickname'],
+        });
+
+
+        await Promise.all(
+            usersWithCount.rows.map(async (result) => {
+                const image = await pokeApi.getImage(req, res, result.pokemon_name);
+                const type = await pokeApi.getType(req, res, result.pokemon_name);
+                const move = await pokeApi.getMove(req, res, result.pokemon_name);
+
+                result.image = image
+                result.type = type
+                result.move = move
+            })
+        )
+
+        const pokemon = usersWithCount.rows.map((result) => ({
+            id: result.id,
+            name: result.pokemon_name,
+            nickname: result.nickname,
+            image: result.image,
+            type: result.type,
+            move: result.move
+        }));
+
+        return res.status(200).json({
+            count: usersWithCount.count,
+            data: pokemon,
+            totalPages: Math.ceil(usersWithCount.count / parseInt(size))
+        });
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            status: res.statusCode,
+            message: e.message
+        })
+    }
+}
+
 module.exports = {
     catchPokemon,
-    addPokemon
+    addPokemon,
+    getMyPokemonList
 }
