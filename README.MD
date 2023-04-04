@@ -1,5 +1,8 @@
 # Pokemon
 
+## Docker Hub
+* [Docker](https://hub.docker.com/repository/docker/respecker/backend-pokemon/general/) - respecker/backend-pokemon
+
 ## Built with
 * [Express](https://expressjs.com/) - The web framework used
 * [MySQL](https://mysql.com/) - Database
