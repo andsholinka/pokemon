@@ -7,7 +7,6 @@ module.exports = (sequelize, DataTypes) => {
     myPokemonList.init({
         pokemon_name: DataTypes.STRING,
         nickname: DataTypes.STRING,
-        // fibonacci: DataTypes.INTEGER,
     }, {
         sequelize,
         modelName: "myPokemonList",
