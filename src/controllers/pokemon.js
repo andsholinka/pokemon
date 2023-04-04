@@ -3,9 +3,28 @@ const {
 } = require("../models");
 const pokeApi = require('../service/pokeApi');
 
-const catchPokemon = async (req, res) => {
+function fibonacci(n) {
+    if (n === 0) {
+        return 0;
+    }
+    if (n === 1) {
+        return 1;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
 
+}
+
+function validation(str) {
+    return /^[ A-Za-z0-9()_]*$/.test(str);
+}
+
+function isFirst(str) {
+    return /[-]/.test(str);
+}
+
+const catchPokemon = async (req, res) => {
     try {
+
         let success = Math.random() < 0.5;
         if (success) {
             res.status(200).send({
@@ -18,17 +37,21 @@ const catchPokemon = async (req, res) => {
                 message: `You failed to catch the ${req.params.name}!`,
             })
         }
+
     } catch (e) {
-        console.log(e);
-        res.status(500).send({
+        console.log(e.message);
+        res.status(400).send({
             status: res.statusCode,
             message: e.message
-        })
+        });
     }
 }
 
 const addPokemon = async (req, res) => {
     try {
+
+        if (!validation(req.body.nickname)) throw new Error(`Nickname ${req.body.nickname} is not valid`);
+
         const data = await myPokemonList.create({
             pokemon_name: req.body.pokemon_name,
             nickname: req.body.nickname,
@@ -38,12 +61,13 @@ const addPokemon = async (req, res) => {
 
         res.status(201).send({
             status: "Success",
-            message: `Success add ${data.pokemon_name} to My Pokemon List`,
+            message: `Success add ${req.body.nickname} to My Pokemon List`,
             data
         })
+
     } catch (e) {
-        console.log(e);
-        res.status(500).send({
+        console.log(e.message);
+        res.status(400).send({
             status: res.statusCode,
             message: e.message
         });
@@ -51,8 +75,8 @@ const addPokemon = async (req, res) => {
 }
 
 const getMyPokemonList = async (req, res) => {
-
     try {
+
         const pageAsNumber = parseInt(req.query.page);
         const sizeAsNumber = parseInt(req.query.size);
 
@@ -72,7 +96,6 @@ const getMyPokemonList = async (req, res) => {
             attributes: ['id', 'pokemon_name', 'nickname'],
         });
 
-
         await Promise.all(
             usersWithCount.rows.map(async (result) => {
                 const image = await pokeApi.getImage(req, res, result.pokemon_name);
@@ -88,7 +111,7 @@ const getMyPokemonList = async (req, res) => {
         const pokemon = usersWithCount.rows.map((result) => ({
             id: result.id,
             name: result.pokemon_name,
-            nickname: result.nickname,
+            nickname: result.nickname.split('-')[0],
             image: result.image,
             type: result.type,
             move: result.move
@@ -99,12 +122,13 @@ const getMyPokemonList = async (req, res) => {
             data: pokemon,
             totalPages: Math.ceil(usersWithCount.count / parseInt(size))
         });
+
     } catch (e) {
-        console.log(e);
-        res.status(500).send({
+        console.log(e.message);
+        res.status(400).send({
             status: res.statusCode,
             message: e.message
-        })
+        });
     }
 }
 
@@ -117,18 +141,14 @@ const releasePokemon = async (req, res) => {
             }
         })
 
-        if (data == null) {
-            res.status(404).send({
-                status: res.statusCode,
-                message: `Pokemon with ID ${req.params.id} Not Found`,
-            })
-            return
-        }
+        if (data == null) throw new Error(`Pokemon with ID ${req.params.id} Not Found`);
 
         let number = Math.floor((Math.random() * 10) + 1);
+        console.log(number);
+
+        if (number % 2 != 0) throw new Error(`failed to release pokemon ${data.nickname}, try again!`);
 
         if (number % 2 === 0) {
-            console.log(number + " is a prime number");
             await myPokemonList.destroy({
                 where: {
                     id: req.params.id,
@@ -138,18 +158,11 @@ const releasePokemon = async (req, res) => {
                 status: res.statusCode,
                 message: `pokemon ${data.nickname} successfully released`,
             });
-        } else {
-            console.log(number + " is not a prime number");
-
-            res.status(400).json({
-                status: res.statusCode,
-                message: `failed to release pokemon ${data.nickname}, try again!`,
-            });
         }
 
     } catch (e) {
-        console.log(e);
-        res.status(500).send({
+        console.log(e.message);
+        res.status(400).send({
             status: res.statusCode,
             message: e.message
         });
@@ -157,60 +170,83 @@ const releasePokemon = async (req, res) => {
 }
 
 const renamePokemon = async (req, res) => {
-
     try {
+
+        if (!validation(req.body.nickname)) throw new Error(`Nickname ${req.body.nickname} is not valid`);
+
         const data = await myPokemonList.findOne({
             where: {
                 id: req.params.id
             }
         })
 
-        if (data == null) {
-            res.status(404).send({
-                status: res.statusCode,
-                message: `Pokemon with ID ${req.params.id} Not Found`,
-            })
-            return
-        }
+        if (data == null) throw new Error(`Pokemon with ID ${req.params.id} Not Found`);
 
-        if (data.fibonacci == null) {
-            var lastFibonacci = 0;
-            var nextFibonacci = 1
+        if (!isFirst(data.nickname)) {
+            var nextFibo = fibonacci(0)
             await data.update({
-                nickname: `${req.body.nickname}-${lastFibonacci}`,
-                fibonacci: nextFibonacci,
+                nickname: `${req.body.nickname}-${nextFibo}`,
                 updatedAt: Date.now(),
             });
 
-            res.status(200).send({
-                status: 'Success',
+            return res.status(200).send({
+                status: res.statusCode,
                 message: 'Success',
                 data: data.nickname
             })
-            return
-        } else {
-            var lastFibonacci = data.fibonacci
-            var currentFibonacci = parseInt(data.nickname.split('-').pop()) + lastFibonacci
-            var nextFibonacci = parseInt(currentFibonacci) + lastFibonacci
+        }
 
+        if (data.nickname.split('-').pop() == 0) {
+            var lastFibo = parseInt(data.nickname.split('-').pop()) + 1;
+            var nextFibo = fibonacci(lastFibo);
             await data.update({
-                nickname: `${req.body.nickname}-${lastFibonacci}`,
-                fibonacci: currentFibonacci,
+                nickname: `${req.body.nickname}-${nextFibo}`,
                 updatedAt: Date.now(),
             });
 
-            res.status(200).send({
-                status: 'Success',
+            return res.status(200).send({
+                status: res.statusCode,
                 message: 'Success',
-                data: data.nickname,
-                // data: data.nickname.split('-')[0]
+                data: data.nickname
             })
+        }
+
+        if (data.nickname.split('-').pop() == 1) {
+            var lastFibo = parseInt(data.nickname.split('-').pop()) + 1;
+
+            res.status(200).send({
+                status: res.statusCode,
+                message: 'Success',
+                data: data.nickname
+            })
+
+            await data.update({
+                nickname: `${req.body.nickname}-${lastFibo}`,
+                updatedAt: Date.now(),
+            });
+            return
+        }
+
+        if (data.nickname.split('-').pop() > 1) {
+            var lastFibo = parseInt(data.nickname.split('-').pop()) + 1;
+            var nextFibo = fibonacci(lastFibo);
+
+            res.status(200).send({
+                status: res.statusCode,
+                message: 'Success',
+                data: `${data.nickname.split('-')[0]}-${nextFibo}`
+            })
+
+            await data.update({
+                nickname: `${req.body.nickname}-${lastFibo}`,
+                updatedAt: Date.now(),
+            });
             return
         }
 
     } catch (e) {
-        console.log(e);
-        res.status(500).send({
+        console.log(e.message);
+        res.status(400).send({
             status: res.statusCode,
             message: e.message
         })

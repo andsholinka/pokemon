@@ -15,9 +15,9 @@ module.exports = {
       nickname: {
         type: Sequelize.STRING,
       },
-      fibonacci: {
-        type: Sequelize.INTEGER,
-      },
+      // fibonacci: {
+      //   type: Sequelize.INTEGER,
+      // },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
