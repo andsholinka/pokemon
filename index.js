@@ -2,6 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const logger = require('morgan');
 
+const cluster = require('cluster');
+const os = require('os');
+const process = require('process');
+
 require('dotenv').config();
 const PORT = process.env.PORT || 3030;
 
@@ -42,10 +46,6 @@ app.get('/_health', (req, res) => {
     res.status(200).send('ok')
 })
 
-app.listen(PORT, () => {
-    console.log(`listening on port ${PORT}`);
-});
-
 app.use('/api', router);
 
 router.use('/v1', apiRouter);
@@ -53,3 +53,21 @@ router.use('/v1', apiRouter);
 app.use((req, res) => {
     res.status(404).send('404 Page Not Found')
 });
+
+if (cluster.isPrimary) {
+    console.log(`Primary ${process.pid} is running`);
+    for (let i = 0; i < os.cpus().length; i++) {
+        cluster.fork();
+    }
+
+    cluster.addListener('exit', (worker, code, signal) => {
+        console.log(`Worker-${worker.process.pid} is exit`);
+        cluster.fork();
+    })
+}
+
+if (cluster.isWorker) {
+    app.listen(PORT, () => {
+        console.log(`listening on port ${PORT} in worker ${process.pid}`);
+    });
+}
