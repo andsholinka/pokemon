@@ -172,16 +172,17 @@ const releasePokemon = async (req, res) => {
 const renamePokemon = async (req, res) => {
     try {
 
-        if (!validation(req.body.nickname)) throw new Error(`Nickname ${req.body.nickname} is not valid`);
-
+        
         const data = await myPokemonList.findOne({
             where: {
                 id: req.params.id
             }
         })
-
+        
         if (data == null) throw new Error(`Pokemon with ID ${req.params.id} Not Found`);
-
+        
+        if (!validation(req.body.nickname)) throw new Error(`Nickname ${req.body.nickname} is not valid`);
+        
         if (!isFirst(data.nickname)) {
             var nextFibo = fibonacci(0)
             await data.update({
