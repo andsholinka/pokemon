@@ -7,7 +7,7 @@ const os = require('os');
 const process = require('process');
 
 require('dotenv').config();
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 8080;
 
 const apiRouter = require('./src/routers');
 
