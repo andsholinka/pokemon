@@ -1,16 +1,9 @@
 {
     "version": 2,
-    "name": "pokemon",
     "builds": [
         { "src": "./index.js", "use": "@vercel/node" }
     ],
     "routes": [
-        { "src": "/(.*)", "dest": "" }
-    ],
-    "env": {
-        "BRANCH": "vercel",
-        "APP_ENV": "production",
-        "APP_DEBUG": "true",
-        "APP_URL": "https://pokemon-nine-roan.vercel.app/"
-    }
+        { "src": "/(.*)", "dest": "/" }
+    ]
 }
