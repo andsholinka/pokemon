@@ -54,20 +54,6 @@ app.use((req, res) => {
     res.status(404).send('404 Page Not Found')
 });
 
-if (cluster.isPrimary) {
-    console.log(`Primary ${process.pid} is running`);
-    for (let i = 0; i < os.cpus().length; i++) {
-        cluster.fork();
-    }
-
-    cluster.addListener('exit', (worker, code, signal) => {
-        console.log(`Worker-${worker.process.pid} is exit`);
-        cluster.fork();
-    })
-}
-
-if (cluster.isWorker) {
-    app.listen(PORT, () => {
-        console.log(`listening on port ${PORT} in worker ${process.pid}`);
-    });
-}
+app.listen(PORT, () => {
+    console.log(`listening on port ${PORT} in worker ${process.pid}`);
+});
